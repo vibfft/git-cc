@@ -245,7 +245,7 @@ class Uncataloged(Changeset):
                     print(sym_split[:2] + sym_split[-2:])  # ['>', 'Test_1.0.1', '2022-04-18', 'hmoon']
                 sym_split = sym_split[:2] + sym_split[-2:]
                 if DEBUG:
-                    print(' '.join(sym_split))             # > EMRTLTest_1.0.1 2022-04-18 hmoon
+                    print(' '.join(sym_split))             # > Test_1.0.1 2022-04-18 hmoon
                 line = ' '.join(sym_split)
             if line.startswith('<'):
                 git_exec(['rm', '-r', getFile(line)], errors=False)
