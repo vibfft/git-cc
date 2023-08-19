@@ -62,19 +62,14 @@ def getStatuses(id, initial):
     types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add, 'C':Add, 'S':SymLink}
     list = []
     split = status.split('\x00')
-    print(f"getStatuses status: {status}")
-    print(f"getStatuses split: {split}")
     while len(split) > 1:
         char = split.pop(0)[0] # first char
         args = [split.pop(0)]
-        print(f"getStatuses args: {args}")
         # check if file is really a symlink
         cmd = ['ls-tree', '-z', id, '--', args[0]]
-        print(f"getStatuses ls-tree: {cmd}")
         if git_exec(cmd).split(' ')[0] == '120000':
             char = 'S'
             args.append(id)
-            print(f"Inside symlink construct: {args}, id: {id}")
         if char == 'R':
             args.append(split.pop(0))
         elif char == 'C':

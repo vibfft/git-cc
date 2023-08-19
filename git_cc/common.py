@@ -56,7 +56,7 @@ if ENCODING is None:
     locale_name, ENCODING = locale.getdefaultlocale()
 if ENCODING is None:
     ENCODING = "ISO8859-1"
-DEBUG = False
+DEBUG = True
 
 def fail(string):
     print(string)
