@@ -238,7 +238,15 @@ class Uncataloged(Changeset):
         for line in diff.split('\n'):
             sym = line.find(' -> ')
             if sym >= 0:
-                continue
+                if DEBUG:
+                    print(f"sym: {line}")     # sym: > EMRTLTest_1.0.1 -> ../../../tl/EMRTLTest/1.0.1 2006-04-18 erichard
+                sym_split = line.split(" ")
+                if DEBUG:
+                    print(sym_split[:2] + sym_split[-2:])  # ['>', 'EMRTLTest_1.0.1', '2006-04-18', 'erichard']
+                sym_split = sym_split[:2] + sym_split[-2:]
+                if DEBUG:
+                    print(' '.join(sym_split))             # > EMRTLTest_1.0.1 2006-04-18 erichard
+                line = ' '.join(sym_split)
             if line.startswith('<'):
                 git_exec(['rm', '-r', getFile(line)], errors=False)
                 cache.remove(getFile(line))
