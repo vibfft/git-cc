@@ -218,6 +218,7 @@ class Changeset(object):
         mkdirs(toFile)
         removeFile(toFile)
         try:
+            cc_exec(['ls','-l', cc_file(file, version)])
             cc_exec(['get','-to', toFile, cc_file(file, version)])
         except:
             if len(file) < 200:
@@ -235,27 +236,44 @@ class Uncataloged(Changeset):
         diff = cc_exec(['diff', '-diff_format', '-pred', dir], errors=False)
         def getFile(line):
             return join(self.file, line[2:max(line.find('  '), line.find(FS + ' '))])
+        symlink_flag = False
         for line in diff.split('\n'):
             sym = line.find(' -> ')
             if sym >= 0:
+                symlink_flag = True
                 if DEBUG:
-                    print(f"sym: {line}")     # sym: > Test_1.0.1 -> ../../../tl/Test/1.0.1 2022-04-18 hmoon
+                    print("sym: {}".format(line))     # sym: > EMRTLTest_1.0.1 -> ../../../tl/EMRTLTest/1.0.1 2006-04-18 erichard
                 sym_split = line.split(" ")
                 if DEBUG:
-                    print(sym_split[:2] + sym_split[-2:])  # ['>', 'Test_1.0.1', '2022-04-18', 'hmoon']
+                    print(sym_split[:2] + sym_split[-2:])  # ['>', 'EMRTLTest_1.0.1', '2006-04-18', 'erichard']
                 sym_split = sym_split[:2] + sym_split[-2:]
                 if DEBUG:
-                    print(' '.join(sym_split))             # > Test_1.0.1 2022-04-18 hmoon
+                    print(' '.join(sym_split))             # > EMRTLTest_1.0.1 2006-04-18 erichard
                 line = ' '.join(sym_split)
             if line.startswith('<'):
                 git_exec(['rm', '-r', getFile(line)], errors=False)
                 cache.remove(getFile(line))
             elif line.startswith('>'):
+
+                if symlink_flag:
+                  print("SYM: {}".format(line))
                 added = getFile(line)
+                if symlink_flag:
+                  print("SYM added: {}".format(added))
                 cc_added = join(CC_DIR, added)
-                if not exists(cc_added) or isdir(cc_added) or added in files:
+                if symlink_flag:
+                  print("SYM CC_added: {}".format(cc_added))
+                  print("EXISTS: {}".format(exists(cc_added)))
+                  print("ISDIR: {}".format(isdir(cc_added)))
+                  print("ADDED: {}".format(added in files))
+                  print("SHOULD FALSE: {}".format(symlink_flag))
+                if symlink_flag:
+                  print("SYMLINK: MOVE ONTO NEXT")
+                elif not exists(cc_added) or isdir(cc_added) or added in files:
                     continue
                 history = cc_exec(['lshistory', '-fmt', '%o%m|%Nd|%Vn\\n', added], errors=False)
+                if symlink_flag:
+                  print("HISTORY: {}".format(history))
                 if not history:
                     continue
                 history = filter(None, history.split('\n'))
@@ -265,10 +283,15 @@ class Uncataloged(Changeset):
                 actual_versions = self.filter_versions(all_versions, lambda x: x[1] < date)
 
                 versions = self.checkin_versions(actual_versions)
+                if symlink_flag:
+                  print("SYM VERSION: {}".format(versions))
                 if not versions:
                     print("It appears that you may be missing a branch in the includes section of your gitcc config for file '%s'." % added)
                     continue
+                if symlink_flag:
+                  print("SYM added: {}".format(added))
                 self._add(added, versions[0][2].strip())
+                symlink_flag = False
 
     def checkin_versions(self, versions):
         return self.filter_versions_by_type(versions, 'checkinversion')
